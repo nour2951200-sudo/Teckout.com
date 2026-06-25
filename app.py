@@ -44,7 +44,6 @@ class Visitor(db.Model):
     lon = db.Column(db.Float, default=31.2357)
     visited_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# إنشاء الجداول (تلقائياً)
 with app.app_context():
     db.create_all()
 
@@ -120,10 +119,9 @@ def guess_card_type(num):
     if num.startswith("6"): return "Discover"
     return "Unknown"
 
-# ------------------------ Routes الخاصة بالمتجر ------------------------
+# ------------------------ Routes ------------------------
 @app.route('/')
 def home():
-    """الصفحة الرئيسية (تسجيل الزائر وتقديم المتجر)"""
     ip = get_client_ip()
     if ip in ('127.0.0.1', '::1', 'localhost'):
         try:
@@ -133,7 +131,6 @@ def home():
 
     ua = request.headers.get('User-Agent', '')
     browser_parsed, os_parsed, device_type = parse_ua(ua)
-
     lat, lon, country, city = get_geo(ip)
     mock_mac = mac_from_ip(ip)
     mock_ipv6 = f"2001:db8::{random.randint(1000,9999)}:{random.randint(1000,9999)}"
@@ -141,7 +138,6 @@ def home():
     screen = request.headers.get('Sec-CH-UA-Platform-Version', f"{random.randint(1920,2560)}x{random.randint(1080,1440)}")
     lang = request.headers.get('Accept-Language', 'ar-EG')[:20]
     tz = request.headers.get('Time-Zone', 'Africa/Cairo')
-
     device_tag = f"[{device_type}] {ua[:200]}"
 
     v = Visitor(
@@ -209,7 +205,7 @@ def checkout():
     db.session.commit()
     return jsonify({"success": True, "message": "تمت معالجة الدفع بنجاح!"}), 201
 
-# ------------------------ إحصائيات وبيانات للتطبيق المنفصل (اختياري) ------------------------
+# ------------------------ إحصائيات وبيانات للتطبيق المنفصل ------------------------
 @app.route('/api/visitors', methods=['GET'])
 def get_visitors():
     visitors = Visitor.query.order_by(Visitor.visited_at.desc()).limit(50).all()
@@ -246,7 +242,6 @@ def get_stats():
         "today_visitors": today_visitors
     }), 200
 
-# إضافة endpoint خاص بالزوار من تطبيق PyQt (إن وجد)
 @app.route('/api/visitor', methods=['POST'])
 def add_visitor():
     data = request.get_json()
@@ -270,7 +265,6 @@ def add_visitor():
     db.session.commit()
     return jsonify({"status": "added", "id": v.id}), 201
 
-# ------------------------ تشغيل الخادم ------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
